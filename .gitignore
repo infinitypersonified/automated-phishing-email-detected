@@ -1,0 +1,14 @@
+# Ignore the virtual environment
+.venv/
+venv/
+
+# Ignore the large model folders
+model/
+fine_tuned_phishing_model/
+
+# Ignore all CSV files in the main folder and subfolders
+*.csv
+phishing-detector/dataset/
+
+# Ignore python cache
+__pycache__/
