@@ -1,11 +1,13 @@
+--find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+torch==2.2.0+cpu
+transformers
 flask
 flask-cors
+gunicorn
+protobuf
+sentencepiece
+tiktoken
 joblib
 numpy
 scikit-learn
 scipy
-transformers
-torch
-gunicorn
-protobuf
-sentencepiece
