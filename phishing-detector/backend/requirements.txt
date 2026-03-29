@@ -7,3 +7,5 @@ scipy
 transformers
 torch
 gunicorn
+protobuf
+sentencepiece
