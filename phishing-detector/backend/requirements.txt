@@ -1,5 +1,5 @@
---find-links https://download.pytorch.org/whl/cpu/torch_stable.html
-torch==2.2.0+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.1
 transformers
 flask
 flask-cors
@@ -11,3 +11,4 @@ joblib
 numpy
 scikit-learn
 scipy
+sacremoses
