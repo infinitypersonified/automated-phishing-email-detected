@@ -9,7 +9,8 @@ function App() {
   const [error, setError] = useState('')
 
   // REPLACE THIS WITH YOUR ACTUAL RENDER URL
-  const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com/' 
+// Change this line in your App.jsx
+const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com';
 
   const suspiciousSet = useMemo(() => new Set(result?.suspicious_words ?? []), [result])
 
