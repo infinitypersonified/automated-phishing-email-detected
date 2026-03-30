@@ -8,6 +8,9 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // REPLACE THIS WITH YOUR ACTUAL RENDER URL
+  const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com/' 
+
   const suspiciousSet = useMemo(() => new Set(result?.suspicious_words ?? []), [result])
 
   const highlightedPreview = useMemo(() => {
@@ -29,12 +32,15 @@ function App() {
     }
     try {
       setLoading(true)
-      const response = await axios.post('http://127.0.0.1:5000/predict', {
+      // Updated to use the live Render URL
+      const response = await axios.post(`${BACKEND_URL}/predict`, {
         email_text: emailText,
       })
       setResult(response.data)
     } catch (err) {
-      setError(err?.response?.data?.error || 'Backend not reachable. Start Flask server.')
+      // Better error message for a live site
+      const errorMsg = err?.response?.data?.error || 'Unable to reach the AI server. It might be waking up—please try again in 30 seconds.'
+      setError(errorMsg)
     } finally {
       setLoading(false)
     }
