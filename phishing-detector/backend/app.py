@@ -7,7 +7,7 @@ CORS(app)
 
 # 🚀 CLOUD FETCH: Points to your Hugging Face Repository
 # This replaces the old MODEL_DIR logic
-HF_REPO_ID = "Infinitypersonified/Automatedphishing-model"
+HF_REPO_ID = "Infinitypersonified/Automatedphishing-model/fine_tuned_phishing_model"
 
 # Initialize the service using the Hugging Face ID
 service = ModelService(HF_REPO_ID)
