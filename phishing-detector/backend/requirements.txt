@@ -1,9 +1,10 @@
-flask
-flask-cors
-gunicorn
+numpy<2
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.2.1
 transformers==4.38.2
+flask
+flask-cors
+gunicorn
 protobuf
 sentencepiece
 tiktoken
