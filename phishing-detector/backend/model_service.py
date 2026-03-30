@@ -7,11 +7,7 @@ from feature_extraction import compute_structural_features
 
 class ModelService:
     def __init__(self, hf_repo_id: str):
-        # 🤖 Instead of looking for a folder on your C: drive, 
-        # we now look for your repo ID on Hugging Face.
         self.hf_repo_id = hf_repo_id
-
-        # This will automatically download the files from the cloud
         self.tokenizer = AutoTokenizer.from_pretrained(self.hf_repo_id)
         self.model = AutoModelForSequenceClassification.from_pretrained(self.hf_repo_id)
 
@@ -51,15 +47,20 @@ class ModelService:
         # 🤖 FALLBACK → MODEL
         features = compute_structural_features(text)
 
+        # UPDATED TOKENIZER CALL
         inputs = self.tokenizer(
             text,
             return_tensors="pt",
             truncation=True,
             padding=True,
-            max_length=256
+            max_length=256,
+            return_token_type_ids=False  # <--- FIX: DistilBERT doesn't use these
         )
 
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+        # EXTRA SAFETY: Ensure token_type_ids are gone even if tokenizer ignored the flag
+        inputs.pop("token_type_ids", None)
 
         with torch.no_grad():
             outputs = self.model(**inputs)
