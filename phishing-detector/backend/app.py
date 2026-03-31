@@ -6,59 +6,51 @@ import os
 
 app = Flask(__name__)
 
-# 🛡️ THE FIX: Broad CORS configuration
-CORS(app, resources={r"/*": {
-    "origins": "*",
-    "methods": ["GET", "POST", "OPTIONS"],
-    "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"]
-}})
+# 1. Standard CORS setup
+CORS(app, resources={r"/*": {"origins": "*"}})
 
+# 🚀 Load the model
 HF_REPO_ID = "Infinitypersonified/Automatedphishing-model"
-
-# Initialize the service
 service = None
 try:
     service = ModelService(HF_REPO_ID)
 except Exception as e:
-    logging.error(f"Failed to load ModelService: {e}")
+    logging.error(f"Model Load Failed: {e}")
+
+# 2. THE NUCLEAR OPTION: Force headers on EVERY response
+@app.after_request
+def add_cors_headers(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
+    return response
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "model_loaded": service is not None}), 200
+    return jsonify({"status": "ok", "model_loaded": service is not None})
 
 @app.route("/predict", methods=["POST", "OPTIONS"])
 def predict():
-    # 🕵️ CRITICAL: Manually handle the OPTIONS pre-flight
+    # Handle the browser's "Pre-flight" check
     if request.method == "OPTIONS":
-        return _build_cors_preflight_response()
+        return make_response("", 204)
 
     if service is None:
-        return _corsify_response(jsonify({"error": "Model not loaded"}), 503)
+        return jsonify({"error": "Model not ready"}), 503
 
     payload = request.get_json(silent=True) or {}
     email_text = payload.get("email_text", "").strip()
 
     if not email_text:
-        return _corsify_response(jsonify({"error": "email_text is required"}), 400)
+        return jsonify({"error": "email_text is required"}), 400
 
     try:
         result = service.predict(email_text)
-        return _corsify_response(jsonify(result), 200)
+        return jsonify(result)
     except Exception as e:
-        logging.error(f"Prediction error: {e}")
-        return _corsify_response(jsonify({"error": str(e)}), 500)
-
-def _build_cors_preflight_response():
-    response = make_response()
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Headers", "*")
-    response.headers.add("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-    return response
-
-def _corsify_response(response_obj, status_code):
-    response_obj.headers.add("Access-Control-Allow-Origin", "*")
-    return response_obj, status_code
+        logging.error(f"Prediction Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-    app.run(debug=False, host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=False)
