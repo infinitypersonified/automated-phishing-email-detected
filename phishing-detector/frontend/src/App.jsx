@@ -8,9 +8,8 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // REPLACE THIS WITH YOUR ACTUAL RENDER URL
-// Change this line in your App.jsx
-const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com';
+  // 🔗 Ensure there is NO trailing slash at the end of the URL
+  const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com';
 
   const suspiciousSet = useMemo(() => new Set(result?.suspicious_words ?? []), [result])
 
@@ -27,20 +26,32 @@ const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com';
   const onAnalyze = async () => {
     setError('')
     setResult(null)
+    
     if (!emailText.trim()) {
       setError('Please paste email content before analysis.')
       return
     }
+
     try {
       setLoading(true)
-      // Updated to use the live Render URL
-      const response = await axios.post(`${BACKEND_URL}/predict`, {
-        email_text: emailText,
-      })
+      
+      // 🛡️ Explicitly setting headers and method to bypass CORS "pre-flight" issues
+      const response = await axios({
+        method: 'post',
+        url: `${BACKEND_URL}/predict`,
+        data: { email_text: emailText },
+        headers: { 
+          'Content-Type': 'application/json'
+        }
+      });
+      
       setResult(response.data)
     } catch (err) {
-      // Better error message for a live site
-      const errorMsg = err?.response?.data?.error || 'Unable to reach the AI server. It might be waking up—please try again in 30 seconds.'
+      console.error("Analysis Error:", err);
+      // Logic to catch if it's a 500 error from the AI crashing or a connection error
+      const errorMsg = err?.response?.data?.error || 
+                       err?.message || 
+                       'Unable to reach the AI server. It might be waking up—please try again in 30 seconds.';
       setError(errorMsg)
     } finally {
       setLoading(false)
@@ -77,12 +88,8 @@ const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com';
         <section className="results">
           <div className="card">
             <h2>Prediction</h2>
-            <p
-              className={`prediction ${
-                result.prediction === 'phishing' ? 'danger' : 'safe'
-              }`}
-            >
-              {result.prediction}
+            <p className={`prediction ${result.prediction === 'phishing' ? 'danger' : 'safe'}`}>
+              {result.prediction.toUpperCase()}
             </p>
             <div className="prob-wrap">
               <div className="prob-head">
@@ -90,7 +97,13 @@ const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com';
                 <span>{probabilityPct}%</span>
               </div>
               <div className="progress">
-                <div className="bar" style={{ width: `${probabilityPct}%` }} />
+                <div 
+                  className="bar" 
+                  style={{ 
+                    width: `${probabilityPct}%`,
+                    backgroundColor: result.prediction === 'phishing' ? '#ff4d4d' : '#4CAF50' 
+                  }} 
+                />
               </div>
             </div>
             <p className="explanation">{result.explanation}</p>
@@ -108,14 +121,6 @@ const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com';
               <strong>Links detected:</strong>{' '}
               {result.links_detected?.length ? result.links_detected.join(', ') : 'None'}
             </p>
-            <div className="feature-grid">
-              {Object.entries(result.extracted_features || {}).map(([key, value]) => (
-                <div key={key} className="feature-item">
-                  <span>{key}</span>
-                  <strong>{String(value)}</strong>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="card">
@@ -136,4 +141,4 @@ const BACKEND_URL = 'https://automated-phishing-email-detected.onrender.com';
   )
 }
 
-export default App
+export default App;
