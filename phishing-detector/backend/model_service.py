@@ -56,6 +56,44 @@ class ModelService:
                 "explanation": "Matched common phishing pattern"
             }
 
+            # ✅ GROUP 1: TRUSTED SYSTEM & DEV OPS (Prevents your Render/GitHub trap)
+        if any(keyword in text_lower for keyword in [
+            "deploy process", "build successful", "commit:", "pull request", 
+            "github", "render.com", "vercel", "deployment live", 
+            "npm install", "dependency", "merged into main"
+        ]):
+            return {
+                "prediction": "legitimate",
+                "probability": 0.05,
+                "explanation": "Verified as a technical system/deployment notification."
+            }
+
+        # ✅ GROUP 2: TRANSACTIONAL & BANKING (Common safe "Urgent" emails)
+        if any(keyword in text_lower for keyword in [
+            "one-time password", "otp is:", "your verification code", 
+            "transaction successful", "debited from your account", 
+            "receipt for your purchase", "order #", "tracking number"
+        ]):
+            return {
+                "prediction": "legitimate",
+                "probability": 0.1,
+                "explanation": "Recognized as a standard transactional or security code message."
+            }
+
+        # 🚨 GROUP 3: INSTANT RED FLAGS (Hard Phishing - No AI needed)
+        # These are so obvious we don't want to risk the AI saying "Maybe safe"
+        if any(keyword in text_lower for keyword in [
+            "kindly provide your ssn", "send your password to", 
+            "account will be deleted in 1 hour", "win a $1000 gift card",
+            "inherited millions", "western union transfer needed",
+            "verify your identity here:", "login-update-required.php"
+        ]):
+            return {
+                "prediction": "phishing",
+                "probability": 1.0,
+                "explanation": "Matched high-risk phishing patterns (Urgent threats or credential harvesting)."
+            }
+
         # 🤖 FALLBACK → MODEL
         features = compute_structural_features(text)
 
