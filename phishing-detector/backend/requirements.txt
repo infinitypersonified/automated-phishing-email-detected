@@ -3,8 +3,9 @@ numpy<2
 torch==2.2.1
 transformers==4.38.2
 flask
-flask-cors
+flask-cors==6.0.2
 gunicorn
 protobuf
 sentencepiece
 tiktoken
+accelerate>=0.26.0
